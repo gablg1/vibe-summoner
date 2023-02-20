@@ -47,6 +47,16 @@ async function loadSamples() {
   snare_sample = await setupSample(audioCtx, Snare01);
 }
 
+window.addEventListener("keydown", (event) => {
+  console.log("Key pressed " + event.keyCode);
+  if (event.keyCode === 'A'.charCodeAt(0)) {
+    playKick();
+  }
+  else if (event.keyCode === 'S'.charCodeAt(0)) {
+    playSnare();
+  }
+});
+
 export default App;
 
 function App() {
@@ -71,8 +81,8 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <Button variant="contained" onClick={() => playKick()}>Kick</Button>
-        <Button variant="contained" onClick={() => playSnare()}>Snare</Button>
+        <Button variant="contained" onClick={() => playKick()}>Kick (A)</Button>
+        <Button variant="contained" onClick={() => playSnare()}>Snare (S)</Button>
       </header>
     </div>
   );
