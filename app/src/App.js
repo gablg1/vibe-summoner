@@ -7,6 +7,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         <Button variant="contained">Kick</Button>
+        <Button variant="contained">Snare</Button>
       </header>
     </div>
   );
