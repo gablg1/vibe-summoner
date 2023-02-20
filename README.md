@@ -1,7 +1,5 @@
 # vibe-summoner
-Help musicians summon whatever vibez they want - live.
-
-DAWs like Ableton
+Help musicians summon whatever vibez they want - live. Then export it straight to Ableton for post-production / finalization.
 
 ## MVP Outline
 - Electron app
