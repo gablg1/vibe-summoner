@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -64,7 +63,7 @@ function App() {
   	return () => {
   	  ignore = false;
   	};
-  }, [audioCtx]);
+  }, []);
 
   if (!appReady) {
     return <Box sx={{ display: 'flex' }}><CircularProgress /></Box>;
