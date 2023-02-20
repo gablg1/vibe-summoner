@@ -3,7 +3,7 @@ Help musicians summon whatever vibez they want - live. Then export it straight t
 
 ## MVP Outline
 - Electron app
-- Single button called "KICK" that plays a sick kick sound
+- Single button called "KICK" that plays a sick loud kick sound
 - Ability to live record everything that your computer is playing in the moment - including the KICK - and to export it out as separate audio tracks. One audio track per app or instrument playing something (Spotify / Youtube / KICK / etc).
 
 ## Post MVP Roadmap
