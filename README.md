@@ -15,3 +15,11 @@ Help musicians summon whatever vibez they want - live. Then export it straight t
 - Add a single microphone to record all live instruments and musicians that are helping compose the vibe outside the computer
 - Export your multi-track recorded live sessions straight into Ableton and other famous DAWs for post-production
 - Mobile app
+
+## Resources
+
+- (Soundflower)[https://github.com/mattingalls/Soundflower/releases/tag/2.0b2]
+  - MacOS Kernel extension that allows applications to pass audio to other applications
+- (Web Audio API)[https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Using_Web_Audio_API]
+- (Tone.js)[https://tonejs.github.io/]
+  - Looks like a promising open source DAW Web Audio framework built on top of Web Audio API
