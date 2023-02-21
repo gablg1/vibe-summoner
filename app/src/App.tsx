@@ -25,7 +25,7 @@ async function setupSample(audioContext: AudioContext, filePath: string) {
   return await getFile(audioContext, filePath);
 }
 
-function playSample(audioContext: AudioContext, audioBuffer: AudioBuffer, time: number) {
+function scheduleSample(audioContext: AudioContext, audioBuffer: AudioBuffer, time: number) {
   const sampleSource = new AudioBufferSourceNode(audioContext, {
     buffer: audioBuffer,
     playbackRate: 1,
@@ -35,44 +35,45 @@ function playSample(audioContext: AudioContext, audioBuffer: AudioBuffer, time: 
   return sampleSource;
 }
 
-let playing = false;
+let playing: { [key: string]: boolean} = {};
 let bpm = 124;
-let startedPlayingAt = 0;
-let nextNoteTime = 0;
-let notesInQueue = []
+let nextNoteTime: { [key: string]: number} = {};
 
-const setTimeoutInterval = 25;
-const scheduleAheadTime = 0.100;
+let wakeUpEvery = 25; //ms
+let scheduleWindow = 0.100; //s
 
-function playBeat() {
-  if (playing) {
-    while (nextNoteTime < audioCtx.currentTime + scheduleAheadTime ) {
-      console.log("Scheduled " + nextNoteTime);
-      console.log(audioCtx.currentTime)
-      scheduleKick(nextNoteTime);
+let instruments: { [key: string]: AudioBuffer} = {};
 
-      // Advance current note and time
-      var secondsPerBeat = 60.0 / bpm;	// picks up the CURRENT tempo value!
-      nextNoteTime += secondsPerBeat;	// Add 1/4 of quarter-note beat length to time
+function wakeUp(instrument: string) {
+  console.log(`Waking up ${instrument}... `);
+  if (playing[instrument]) {
+    const now = audioCtx.currentTime;
+    console.log(`${now} ${nextNoteTime[instrument]}`)
+
+    while (now <= nextNoteTime[instrument] && nextNoteTime[instrument] < now + scheduleWindow) {
+      scheduleSample(audioCtx, instruments[instrument], nextNoteTime[instrument]);
+
+      var secondsPerBeat = 60.0 / bpm;
+      console.log(secondsPerBeat)
+      nextNoteTime[instrument] += secondsPerBeat;
     }
+    window.setTimeout(() => wakeUp(instrument), wakeUpEvery)
   }
-
-  window.setTimeout(playBeat, setTimeoutInterval);
 }
 
 function scheduleKick(time: number) {
   // FIXME: rm "as"
-  playSample(audioCtx, kick_sample as AudioBuffer, time);
+  scheduleSample(audioCtx, kick_sample as AudioBuffer, time);
 }
 
 function playSnare() {
   // FIXME: rm "as"
-  playSample(audioCtx, snare_sample as AudioBuffer, 0);
+  scheduleSample(audioCtx, snare_sample as AudioBuffer, 0);
 }
 
 function playHihat() {
   // FIXME: rm "as"
-  playSample(audioCtx, hihat_sample as AudioBuffer, 0);
+  scheduleSample(audioCtx, hihat_sample as AudioBuffer, 0);
 }
 
 async function loadSamples() {
@@ -81,37 +82,49 @@ async function loadSamples() {
   kick_sample = await setupSample(audioCtx, Kick01);
   snare_sample = await setupSample(audioCtx, Snare01);
   hihat_sample = await setupSample(audioCtx, Hihat01);
+
+  instruments["kick"] = kick_sample;
+  instruments["snare"] = snare_sample;
+  instruments["hihat"] = hihat_sample;
+}
+
+function startPlaying(instrument: string) {
+  if (playing[instrument] !== true) {
+    console.log("Starting to play " + instrument);
+    playing[instrument] = true;
+    nextNoteTime[instrument] = audioCtx.currentTime
+    wakeUp(instrument);
+  }
+}
+
+function stopPlaying(instrument: string) {
+  console.log("Stop playing " + instrument);
+  playing[instrument] = false;
 }
 
 window.addEventListener("keydown", (event) => {
   console.log("Key down" + event.keyCode);
   if (event.keyCode === 'A'.charCodeAt(0)) {
-    if (playing !== true) {
-      console.log("Starting to play");
-      playing = true;
-      startedPlayingAt = audioCtx.currentTime
-      playBeat();
-    }
+    startPlaying("kick");
   }
   else if (event.keyCode === 'S'.charCodeAt(0)) {
-    playSnare();
+    startPlaying("snare");
   }
   else if (event.keyCode === 'D'.charCodeAt(0)) {
-    playHihat();
+    startPlaying("hihat");
   }
 });
 
 window.addEventListener("keyup", (event) => {
   console.log("Key up" + event.keyCode);
   if (event.keyCode === 'A'.charCodeAt(0)) {
-    console.log("Stop playing");
-    playing = false;
+    stopPlaying("kick");
   }
   else if (event.keyCode === 'S'.charCodeAt(0)) {
-    playSnare();
+    stopPlaying("snare");
   }
   else if (event.keyCode === 'D'.charCodeAt(0)) {
-    playHihat();
+    stopPlaying("hihat");
   }
 });
 
