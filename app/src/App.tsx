@@ -37,11 +37,12 @@ function playSample(audioContext: AudioContext, audioBuffer: AudioBuffer, time: 
 
 let playing = false;
 
-let every = 484;
+let bpm = 124;
+let timeBetweenBeats = 1000 * 60 / bpm ;
 function playBeat() {
   if (playing) {
     playKick();
-    window.setTimeout(playBeat, every);
+    window.setTimeout(playBeat, timeBetweenBeats);
   }
 }
 
