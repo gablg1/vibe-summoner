@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import Button from '@mui/material/Button';
@@ -180,8 +181,29 @@ function App() {
 
         <div style={{color: "white", marginBottom: 10}}>Inferred BPM: {60 / inferredSecondsToNextBeat}</div>
 
-        <Button style={{marginBottom: 10}} variant="text" onClick={() => playInstrument("hihat")}>Export to Ableton</Button>
+        <Button style={{marginBottom: 10}} variant="text" onClick={() => exportToAbleton()}>Export to Ableton</Button>
       </header>
     </div>
   );
 }
+
+function exportToAbleton() {
+  navigator.mediaDevices.enumerateDevices().then(gotDevices);
+}
+
+function gotDevices(deviceInfos: any) {
+  let soundFlowerInfo = _.find(deviceInfos, {kind: "audioinput", label: "Soundflower (64ch)"});
+  console.log(soundFlowerInfo);
+
+  navigator.mediaDevices.getUserMedia({audio: true})
+    .then((stream) => {
+      /* use the stream */
+      console.log("Using the stream");
+    })
+    .catch((err) => {
+      /* handle the error */
+      console.log(err);
+    });
+  playInstrument("hihat");
+}
+
