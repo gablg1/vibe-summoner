@@ -36,7 +36,6 @@ function scheduleSample(audioContext: AudioContext, audioBuffer: AudioBuffer, ti
 }
 
 let playing: { [key: string]: boolean} = {};
-let bpm = 124;
 let nextNoteTime: { [key: string]: number} = {};
 
 let wakeUpEvery = 25; //ms
@@ -44,17 +43,26 @@ let scheduleWindow = 0.100; //s
 
 let instruments: { [key: string]: AudioBuffer} = {};
 
+
+const debugWakeUpOn = false;
+function debugWakeUp(s: string) {
+  if (debugWakeUpOn) {
+    console.log(s);
+  }
+}
+
 function wakeUp(instrument: string) {
-  console.log(`Waking up ${instrument}... `);
+  debugWakeUp(`Waking up ${instrument}... `);
+
   if (playing[instrument]) {
     const now = audioCtx.currentTime;
-    console.log(`${now} ${nextNoteTime[instrument]}`)
+    debugWakeUp(`${now} ${nextNoteTime[instrument]}`)
 
     while (now <= nextNoteTime[instrument] && nextNoteTime[instrument] < now + scheduleWindow) {
       scheduleSample(audioCtx, instruments[instrument], nextNoteTime[instrument]);
 
-      var secondsPerBeat = 60.0 / bpm;
-      console.log(secondsPerBeat)
+      var secondsPerBeat = inferredSecondsToNextBeat;
+      debugWakeUp(`Seconds per beat: ${secondsPerBeat}`)
       nextNoteTime[instrument] += secondsPerBeat;
     }
     window.setTimeout(() => wakeUp(instrument), wakeUpEvery)
@@ -77,22 +85,47 @@ async function loadSamples() {
   instruments["hihat"] = hihat_sample;
 }
 
+let lastTimePlayed: { [key: string]: number} = {};
+let inferredSecondsToNextBeat = 60 / 124;
+let minSecondsToNextBeat = 0.1;
+let maxSecondsToNextBeat = 1.5;
+
 function startPlaying(instrument: string) {
   if (playing[instrument] !== true) {
     console.log("Starting to play " + instrument);
+    const now = audioCtx.currentTime;
+
     playing[instrument] = true;
-    nextNoteTime[instrument] = audioCtx.currentTime
+
+    if (instrument in lastTimePlayed) {
+      inferredSecondsToNextBeat = now - lastTimePlayed[instrument];
+
+      // Put beat within human likeable range (~60 to ~180 BPM)
+      while (inferredSecondsToNextBeat < minSecondsToNextBeat) {
+        inferredSecondsToNextBeat *= 2;
+      }
+
+      while (inferredSecondsToNextBeat > maxSecondsToNextBeat) {
+        inferredSecondsToNextBeat /= 2;
+      }
+
+      console.log("Inferred BPM " + 60 / inferredSecondsToNextBeat);
+    }
+
+    lastTimePlayed[instrument] = audioCtx.currentTime;
+    nextNoteTime[instrument] = audioCtx.currentTime;
     wakeUp(instrument);
   }
 }
 
 function stopPlaying(instrument: string) {
-  console.log("Stop playing " + instrument);
-  playing[instrument] = false;
+  if (playing[instrument]) {
+    console.log("Stop playing " + instrument);
+    playing[instrument] = false;
+  }
 }
 
 window.addEventListener("keydown", (event) => {
-  console.log("Key down" + event.keyCode);
   if (event.keyCode === 'A'.charCodeAt(0)) {
     startPlaying("kick");
   }
@@ -105,7 +138,6 @@ window.addEventListener("keydown", (event) => {
 });
 
 window.addEventListener("keyup", (event) => {
-  console.log("Key up" + event.keyCode);
   if (event.keyCode === 'A'.charCodeAt(0)) {
     stopPlaying("kick");
   }
@@ -133,7 +165,7 @@ function App() {
   	return () => {
   	  ignore = false;
   	};
-  }, []);
+  }, [inferredSecondsToNextBeat]);
 
   if (!appReady) {
     return <Box sx={{ display: 'flex' }}><CircularProgress /></Box>;
@@ -146,6 +178,8 @@ function App() {
         <Button style={{marginBottom: 10}} variant="contained" onClick={() => playInstrument("kick")}>Kick (A)</Button>
         <Button style={{marginBottom: 10}} variant="contained" onClick={() => playInstrument("snare")}>Snare (S)</Button>
         <Button style={{marginBottom: 10}} variant="contained" onClick={() => playInstrument("hihat")}>Hihat (D)</Button>
+
+        <div style={{color: "white", marginBottom: 10}}>Inferred BPM: {60 / inferredSecondsToNextBeat}</div>
       </header>
     </div>
   );
