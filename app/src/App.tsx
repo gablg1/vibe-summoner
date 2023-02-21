@@ -6,9 +6,11 @@ import Box from '@mui/material/Box';
 
 import Kick01 from './sounds/kicks/Kick_01.wav';
 import Snare01 from './sounds/snares/Snare_01.wav';
+import Hihat01 from './sounds/hihats/Hihat_01.wav';
 
 let kick_sample: null | AudioBuffer = null;
 let snare_sample: null | AudioBuffer = null;
+let hihat_sample: null | AudioBuffer = null;
 
 const audioCtx = new AudioContext();
 
@@ -43,11 +45,17 @@ function playSnare() {
   playSample(audioCtx, snare_sample as AudioBuffer, 0);
 }
 
+function playHihat() {
+  // FIXME: rm "as"
+  playSample(audioCtx, hihat_sample as AudioBuffer, 0);
+}
+
 async function loadSamples() {
   console.log("Loading samples...");
 
   kick_sample = await setupSample(audioCtx, Kick01);
   snare_sample = await setupSample(audioCtx, Snare01);
+  hihat_sample = await setupSample(audioCtx, Hihat01);
 }
 
 window.addEventListener("keydown", (event) => {
@@ -57,6 +65,9 @@ window.addEventListener("keydown", (event) => {
   }
   else if (event.keyCode === 'S'.charCodeAt(0)) {
     playSnare();
+  }
+  else if (event.keyCode === 'D'.charCodeAt(0)) {
+    playHihat();
   }
 });
 
@@ -86,6 +97,7 @@ function App() {
       <header className="App-header">
         <Button variant="contained" onClick={() => playKick()}>Kick (A)</Button>
         <Button variant="contained" onClick={() => playSnare()}>Snare (S)</Button>
+        <Button variant="contained" onClick={() => playHihat()}>Hihat (D)</Button>
       </header>
     </div>
   );
