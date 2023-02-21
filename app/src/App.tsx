@@ -35,6 +35,17 @@ function playSample(audioContext: AudioContext, audioBuffer: AudioBuffer, time: 
   return sampleSource;
 }
 
+let playing = false;
+
+let every = 1000;
+function playBeat() {
+  if (playing) {
+    playKick();
+    window.setTimeout(playBeat, every);
+  }
+}
+
+
 function playKick() {
   // FIXME: rm "as"
   playSample(audioCtx, kick_sample as AudioBuffer, 0);
@@ -61,7 +72,24 @@ async function loadSamples() {
 window.addEventListener("keydown", (event) => {
   console.log("Key pressed " + event.keyCode);
   if (event.keyCode === 'A'.charCodeAt(0)) {
-    playKick();
+    if (playing != true) {
+      console.log("Starting to play");
+      playing = true;
+      playBeat();
+    }
+  }
+  else if (event.keyCode === 'S'.charCodeAt(0)) {
+    playSnare();
+  }
+  else if (event.keyCode === 'D'.charCodeAt(0)) {
+    playHihat();
+  }
+});
+
+window.addEventListener("keyup", (event) => {
+  console.log("Key pressed " + event.keyCode);
+  if (event.keyCode === 'A'.charCodeAt(0)) {
+    playing = false;
   }
   else if (event.keyCode === 'S'.charCodeAt(0)) {
     playSnare();
@@ -73,8 +101,10 @@ window.addEventListener("keydown", (event) => {
 
 export default App;
 
+
 function App() {
   const [appReady, setAppReady] = useState(false);
+  const [clock, setClock] = useState(1);
 
   useEffect(() => {
     let ignore = false;
