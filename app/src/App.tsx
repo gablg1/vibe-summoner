@@ -72,7 +72,7 @@ async function loadSamples() {
 window.addEventListener("keydown", (event) => {
   console.log("Key pressed " + event.keyCode);
   if (event.keyCode === 'A'.charCodeAt(0)) {
-    if (playing != true) {
+    if (playing !== true) {
       console.log("Starting to play");
       playing = true;
       playBeat();
@@ -104,7 +104,6 @@ export default App;
 
 function App() {
   const [appReady, setAppReady] = useState(false);
-  const [clock, setClock] = useState(1);
 
   useEffect(() => {
     let ignore = false;
