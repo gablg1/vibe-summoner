@@ -43,7 +43,6 @@ let scheduleWindow = 0.100; //s
 
 let instruments: { [key: string]: AudioBuffer} = {};
 
-
 const debugWakeUpOn = false;
 function debugWakeUp(s: string) {
   if (debugWakeUpOn) {
@@ -180,6 +179,8 @@ function App() {
         <Button style={{marginBottom: 10}} variant="contained" onClick={() => playInstrument("hihat")}>Hihat (D)</Button>
 
         <div style={{color: "white", marginBottom: 10}}>Inferred BPM: {60 / inferredSecondsToNextBeat}</div>
+
+        <Button style={{marginBottom: 10}} variant="text" onClick={() => playInstrument("hihat")}>Export to Ableton</Button>
       </header>
     </div>
   );
