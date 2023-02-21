@@ -37,7 +37,7 @@ function playSample(audioContext: AudioContext, audioBuffer: AudioBuffer, time: 
 
 let playing = false;
 
-let every = 1000;
+let every = 484;
 function playBeat() {
   if (playing) {
     playKick();
@@ -101,7 +101,6 @@ window.addEventListener("keyup", (event) => {
 
 export default App;
 
-
 function App() {
   const [appReady, setAppReady] = useState(false);
 
@@ -123,10 +122,12 @@ function App() {
   }
   return (
     <div className="App">
-      <header className="App-header">
-        <Button variant="contained" onClick={() => playKick()}>Kick (A)</Button>
-        <Button variant="contained" onClick={() => playSnare()}>Snare (S)</Button>
-        <Button variant="contained" onClick={() => playHihat()}>Hihat (D)</Button>
+      <header className="App-header" style={{display: 'flex'}}>
+        <h1 style={{color: "white", marginBottom: 10}}>Vibe Summonerz</h1>
+        <div style={{color: "white", marginBottom: 10}}>Expect bugs</div>
+        <Button style={{marginBottom: 10}} variant="contained" onClick={() => playKick()}>Kick (A)</Button>
+        <Button style={{marginBottom: 10}} variant="contained" onClick={() => playSnare()}>Snare (S)</Button>
+        <Button style={{marginBottom: 10}} variant="contained" onClick={() => playHihat()}>Hihat (D)</Button>
       </header>
     </div>
   );
