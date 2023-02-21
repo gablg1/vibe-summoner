@@ -167,7 +167,7 @@ function App() {
   	return () => {
   	  ignore = false;
   	};
-  }, [inferredSecondsToNextBeat]);
+  }, []);
 
   if (!appReady) {
     return <Box sx={{ display: 'flex' }}><CircularProgress /></Box>;
@@ -226,7 +226,7 @@ function gotDevices(deviceInfos: any) {
 
       rec.ondataavailable = (e: any) => {
         audioChunks.push(e.data);
-        if (rec.state == "inactive") {
+        if (rec.state === "inactive") {
           let blob = new Blob(audioChunks, {
             type: 'audio/x-mpeg-3'
           });
