@@ -61,19 +61,8 @@ function wakeUp(instrument: string) {
   }
 }
 
-function scheduleKick(time: number) {
-  // FIXME: rm "as"
-  scheduleSample(audioCtx, kick_sample as AudioBuffer, time);
-}
-
-function playSnare() {
-  // FIXME: rm "as"
-  scheduleSample(audioCtx, snare_sample as AudioBuffer, 0);
-}
-
-function playHihat() {
-  // FIXME: rm "as"
-  scheduleSample(audioCtx, hihat_sample as AudioBuffer, 0);
+function playInstrument(instrument: string) {
+  scheduleSample(audioCtx, instruments[instrument], 0);
 }
 
 async function loadSamples() {
@@ -154,9 +143,9 @@ function App() {
       <header className="App-header" style={{display: 'flex'}}>
         <h1 style={{color: "white", marginBottom: 10}}>Vibe Summonerz</h1>
         <div style={{color: "white", marginBottom: 10}}>Expect bugs</div>
-        <Button style={{marginBottom: 10}} variant="contained" onClick={() => scheduleKick(0)}>Kick (A)</Button>
-        <Button style={{marginBottom: 10}} variant="contained" onClick={() => playSnare()}>Snare (S)</Button>
-        <Button style={{marginBottom: 10}} variant="contained" onClick={() => playHihat()}>Hihat (D)</Button>
+        <Button style={{marginBottom: 10}} variant="contained" onClick={() => playInstrument("kick")}>Kick (A)</Button>
+        <Button style={{marginBottom: 10}} variant="contained" onClick={() => playInstrument("snare")}>Snare (S)</Button>
+        <Button style={{marginBottom: 10}} variant="contained" onClick={() => playInstrument("hihat")}>Hihat (D)</Button>
       </header>
     </div>
   );
