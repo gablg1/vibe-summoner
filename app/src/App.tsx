@@ -36,20 +36,33 @@ function playSample(audioContext: AudioContext, audioBuffer: AudioBuffer, time: 
 }
 
 let playing = false;
-
 let bpm = 124;
-let timeBetweenBeats = 1000 * 60 / bpm ;
+let startedPlayingAt = 0;
+let nextNoteTime = 0;
+let notesInQueue = []
+
+const setTimeoutInterval = 25;
+const scheduleAheadTime = 0.100;
+
 function playBeat() {
   if (playing) {
-    playKick();
-    window.setTimeout(playBeat, timeBetweenBeats);
+    while (nextNoteTime < audioCtx.currentTime + scheduleAheadTime ) {
+      console.log("Scheduled " + nextNoteTime);
+      console.log(audioCtx.currentTime)
+      scheduleKick(nextNoteTime);
+
+      // Advance current note and time
+      var secondsPerBeat = 60.0 / bpm;	// picks up the CURRENT tempo value!
+      nextNoteTime += secondsPerBeat;	// Add 1/4 of quarter-note beat length to time
+    }
   }
+
+  window.setTimeout(playBeat, setTimeoutInterval);
 }
 
-
-function playKick() {
+function scheduleKick(time: number) {
   // FIXME: rm "as"
-  playSample(audioCtx, kick_sample as AudioBuffer, 0);
+  playSample(audioCtx, kick_sample as AudioBuffer, time);
 }
 
 function playSnare() {
@@ -71,11 +84,12 @@ async function loadSamples() {
 }
 
 window.addEventListener("keydown", (event) => {
-  console.log("Key pressed " + event.keyCode);
+  console.log("Key down" + event.keyCode);
   if (event.keyCode === 'A'.charCodeAt(0)) {
     if (playing !== true) {
       console.log("Starting to play");
       playing = true;
+      startedPlayingAt = audioCtx.currentTime
       playBeat();
     }
   }
@@ -88,8 +102,9 @@ window.addEventListener("keydown", (event) => {
 });
 
 window.addEventListener("keyup", (event) => {
-  console.log("Key pressed " + event.keyCode);
+  console.log("Key up" + event.keyCode);
   if (event.keyCode === 'A'.charCodeAt(0)) {
+    console.log("Stop playing");
     playing = false;
   }
   else if (event.keyCode === 'S'.charCodeAt(0)) {
@@ -126,7 +141,7 @@ function App() {
       <header className="App-header" style={{display: 'flex'}}>
         <h1 style={{color: "white", marginBottom: 10}}>Vibe Summonerz</h1>
         <div style={{color: "white", marginBottom: 10}}>Expect bugs</div>
-        <Button style={{marginBottom: 10}} variant="contained" onClick={() => playKick()}>Kick (A)</Button>
+        <Button style={{marginBottom: 10}} variant="contained" onClick={() => scheduleKick(0)}>Kick (A)</Button>
         <Button style={{marginBottom: 10}} variant="contained" onClick={() => playSnare()}>Snare (S)</Button>
         <Button style={{marginBottom: 10}} variant="contained" onClick={() => playHihat()}>Hihat (D)</Button>
       </header>
