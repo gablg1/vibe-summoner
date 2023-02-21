@@ -4,6 +4,8 @@ import './App.css';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import StopIcon from '@mui/icons-material/Stop';
 
 import Kick01 from './sounds/kicks/Kick_01.wav';
 import Snare01 from './sounds/snares/Snare_01.wav';
@@ -181,24 +183,56 @@ function App() {
 
         <div style={{color: "white", marginBottom: 10}}>Inferred BPM: {60 / inferredSecondsToNextBeat}</div>
 
+        <Button style={{marginBottom: 10}} variant="text"><FiberManualRecordIcon onClick={record} /> <StopIcon onClick={stopRecording} /></Button>
         <Button style={{marginBottom: 10}} variant="text" onClick={() => exportToAbleton()}>Export to Ableton</Button>
       </header>
     </div>
   );
 }
 
+let rec: any = null;
+let audioChunks: any[] = [];
+
 function exportToAbleton() {
   navigator.mediaDevices.enumerateDevices().then(gotDevices);
 }
 
+function record() {
+  if (rec === null) {
+    console.warn("Recorder device not loaded");
+    return;
+  }
+  audioChunks = [];
+  rec.start();
+}
+
+function stopRecording() {
+  if (rec === null) {
+    console.warn("Recorder device not loaded");
+    return;
+  }
+  rec.stop();
+}
+
 function gotDevices(deviceInfos: any) {
+  // FIXME: Find more resilient way to find Soundflower device
   let soundFlowerInfo = _.find(deviceInfos, {kind: "audioinput", label: "Soundflower (64ch)"});
   console.log(soundFlowerInfo);
 
-  navigator.mediaDevices.getUserMedia({audio: true})
+  navigator.mediaDevices.getUserMedia({audio: {deviceId: soundFlowerInfo.deviceId}})
     .then((stream) => {
-      /* use the stream */
-      console.log("Using the stream");
+      console.log("Recording the stream");
+      rec = new MediaRecorder(stream);
+
+      rec.ondataavailable = (e: any) => {
+        audioChunks.push(e.data);
+        if (rec.state == "inactive") {
+          let blob = new Blob(audioChunks, {
+            type: 'audio/x-mpeg-3'
+          });
+          console.log(URL.createObjectURL(blob));
+        }
+      }
     })
     .catch((err) => {
       /* handle the error */
