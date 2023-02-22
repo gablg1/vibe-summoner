@@ -159,7 +159,7 @@ function App() {
   useEffect(() => {
     let ignore = false;
 
-    loadSamples().then(() => {
+    loadSamples().then(loadDevices).then(() => {
       if (!ignore) {
         setAppReady(true)
       }
@@ -194,7 +194,7 @@ let rec: any = null;
 let audioChunks: any[] = [];
 
 function exportToAbleton() {
-  navigator.mediaDevices.enumerateDevices().then(gotDevices);
+  playInstrument("hihat");
 }
 
 function record() {
@@ -202,6 +202,7 @@ function record() {
     console.warn("Recorder device not loaded");
     return;
   }
+  console.log("Recording the stream");
   audioChunks = [];
   rec.start();
 }
@@ -211,33 +212,39 @@ function stopRecording() {
     console.warn("Recorder device not loaded");
     return;
   }
+  console.log("Recording stopped");
   rec.stop();
 }
 
-function gotDevices(deviceInfos: any) {
-  // FIXME: Find more resilient way to find Soundflower device
-  let soundFlowerInfo = _.find(deviceInfos, {kind: "audioinput", label: "Soundflower (64ch)"});
-  console.log(soundFlowerInfo);
+function loadDevices() {
+  return navigator.mediaDevices.enumerateDevices().then((deviceInfos) => {
+    // FIXME: Find more resilient way to find Soundflower device
+    let soundFlowerInfo = _.find(deviceInfos, {kind: "audioinput", label: "Soundflower (64ch)"});
+    if (!soundFlowerInfo) {
+      console.log("No Soundflower device found");
+      return;
+    }
+    console.log(`Found Soundflower device with ID ${soundFlowerInfo.deviceId}`);
 
-  navigator.mediaDevices.getUserMedia({audio: {deviceId: soundFlowerInfo.deviceId}})
-    .then((stream) => {
-      console.log("Recording the stream");
-      rec = new MediaRecorder(stream);
+    return navigator.mediaDevices.getUserMedia({audio: {deviceId: soundFlowerInfo.deviceId}})
+      .then((stream) => {
+        rec = new MediaRecorder(stream);
 
-      rec.ondataavailable = (e: any) => {
-        audioChunks.push(e.data);
-        if (rec.state === "inactive") {
-          let blob = new Blob(audioChunks, {
-            type: 'audio/x-mpeg-3'
-          });
-          console.log(URL.createObjectURL(blob));
+        rec.ondataavailable = (e: any) => {
+          audioChunks.push(e.data);
+          if (rec.state === "inactive") {
+            let blob = new Blob(audioChunks, {
+              type: 'audio/x-mpeg-3'
+            });
+            console.log(URL.createObjectURL(blob));
+          }
         }
-      }
-    })
-    .catch((err) => {
-      /* handle the error */
-      console.log(err);
-    });
-  playInstrument("hihat");
+      })
+      .catch((err) => {
+        /* handle the error */
+        console.log(err);
+      });
+  });
 }
+
 
