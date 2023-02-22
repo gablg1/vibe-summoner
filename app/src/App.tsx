@@ -155,11 +155,12 @@ export default App;
 
 function App() {
   const [appReady, setAppReady] = useState(false);
+  const [recordedAudioSrc, setRecordedAudioSrc] = useState("");
 
   useEffect(() => {
     let ignore = false;
 
-    loadSamples().then(loadDevices).then(() => {
+    loadSamples().then(() => loadDevices(setRecordedAudioSrc)).then(() => {
       if (!ignore) {
         setAppReady(true)
       }
@@ -185,6 +186,7 @@ function App() {
 
         <Button style={{marginBottom: 10}} variant="text"><FiberManualRecordIcon onClick={record} /> <StopIcon onClick={stopRecording} /></Button>
         <Button style={{marginBottom: 10}} variant="text" onClick={() => exportToAbleton()}>Export to Ableton</Button>
+        {recordedAudioSrc && <audio src={recordedAudioSrc} controls />}
       </header>
     </div>
   );
@@ -213,31 +215,39 @@ function stopRecording() {
     return;
   }
   console.log("Recording stopped");
+  console.log(rec);
   rec.stop();
 }
 
-function loadDevices() {
+function loadDevices(setRecordedAudioSrc: React.Dispatch<React.SetStateAction<string>>) {
   return navigator.mediaDevices.enumerateDevices().then((deviceInfos) => {
     // FIXME: Find more resilient way to find Soundflower device
-    let soundFlowerInfo = _.find(deviceInfos, {kind: "audioinput", label: "Soundflower (64ch)"});
-    if (!soundFlowerInfo) {
-      console.log("No Soundflower device found");
+    console.log(deviceInfos)
+    let deviceInfo = _.find(deviceInfos, {kind: "audioinput", label: "MacBook Pro Microphone (Built-in)"});
+    //let deviceInfo = _.find(deviceInfos, {kind: "audiooutput", label: "Soundflower (64ch)"});
+    if (!deviceInfo) {
+      console.log("No such input device found");
       return;
     }
-    console.log(`Found Soundflower device with ID ${soundFlowerInfo.deviceId}`);
+    console.log(`Connected to ${deviceInfo.label} device with ID ${deviceInfo.deviceId}`);
 
-    return navigator.mediaDevices.getUserMedia({audio: {deviceId: soundFlowerInfo.deviceId}})
+    return navigator.mediaDevices.getUserMedia({audio: {deviceId: deviceInfo.deviceId}})
       .then((stream) => {
+        console.log(stream.getAudioTracks())
+
+
         rec = new MediaRecorder(stream);
 
         rec.ondataavailable = (e: any) => {
+          console.log("New data available");
           audioChunks.push(e.data);
-          if (rec.state === "inactive") {
-            let blob = new Blob(audioChunks, {
-              type: 'audio/x-mpeg-3'
-            });
-            console.log(URL.createObjectURL(blob));
-          }
+        }
+
+
+        rec.onstop = (e: any) => {
+          console.log("onstop handle")
+          let blob = new Blob(audioChunks, { type: "audio/ogg; codecs=opus" });
+          setRecordedAudioSrc(URL.createObjectURL(blob));
         }
       })
       .catch((err) => {
